@@ -1,14 +1,15 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from catboost import CatBoost
+from catboost import CatBoostRegressor
 import pandas as pd
 import numpy as np
 from typing import Optional
+from preprocessing.cleaning_data import preprocess
 import json
 
 
-model = CatBoost()
-model.load_model("catboost_model.cbm")
+model = CatBoostRegressor()
+model.load_model("model/catboost_model.cbm")
 
 categorical_features = [
     "type", "subtype", "province", "locality", "postCode", "buildingCondition", "epcScore"
@@ -39,32 +40,19 @@ def root():
 @app.post("/predict")
 def predict_price(input: PropertyInput):
     try:
-        # Convert input to DataFrame in exact feature order
-        input_df = pd.DataFrame([{
-            "type": input.type,
-            "subtype": input.subtype,
-            "province": input.province,
-            "locality": input.locality,
-            "postCode": input.postCode,
-            "buildingCondition": input.buildingCondition,
-            "epcScore": input.epcScore,
-            "bedroomCount": input.bedroomCount,
-            "toilet_and_bath": input.toilet_and_bath,
-            "habitableSurface": input.habitableSurface,
-            "facedeCount": input.facedeCount,
-            "hasTerrace": input.hasTerrace,
-            "totalParkingCount": input.totalParkingCount
-        }])
-       
-        with open("model_features.json") as f:
-            feature_order = json.load(f)
-        input_df = input_df[feature_order]
-
-        cat_features = [6, 7, 8, 9, 10, 11, 12] # Adjust if needed
-
+        # Preprocess input into DataFrame
+        input_df = preprocess(input)
+        
+        # Run model prediction
         prediction = model.predict(input_df)
 
-        return {"predicted_price": round(float(prediction[0]), 2)}
+        return {
+            "prediction": round(float(prediction[0]), 2),
+            "status_code": 200
+        }
+    
+    except ValueError as ve:
+        raise HTTPException(status_code=422, detail=str(ve))
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
