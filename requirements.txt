@@ -1,5 +1,6 @@
 catboost==1.2.8
 fastapi==0.95.1
+uvicorn[standard]==0.22.0
 matplotlib==3.7.1
 numpy==1.24.3
 pandas==1.5.3
