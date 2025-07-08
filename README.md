@@ -83,3 +83,21 @@ To run the Streamlit frontend locally, follow these steps:
    ```
 4. Open your browser at http://localhost:8501 to use the app.
 
+### Usage
+
+Once both the backend and frontend are running:
+
+- Navigate to the Streamlit app in your browser: `http://localhost:8501`
+- Enter property details like number of bedrooms, location, living area, etc.
+- Click the “Predict” button to receive an estimated property price.
+- For developers: you can directly interact with the API at `http://localhost:8000/docs`
+
+### Project Structure
+├── app.py # FastAPI application (entry point)
+├── streamlit_app.py # Streamlit frontend UI
+├── model/ # Trained ML model files
+├── Dockerfile # Docker config for backend API
+├── requirements.txt # Python dependencies
+└── README.md # Project documentation
+
+
