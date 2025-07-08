@@ -21,7 +21,8 @@ This project includes:
 
 ## Installation
 
-### Backend API (FastAPI with Docker)### Description
+### Backend API (FastAPI with Docker)
+### Description
 
 The backend API is containerized using Docker. The Dockerfile uses Ubuntu 22.04 and installs Python 3.10. It runs the FastAPI app with Uvicorn on port 8000.
 
