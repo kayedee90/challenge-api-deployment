@@ -44,23 +44,24 @@ To run this project locally, make sure you have **Docker** installed.
    ```bash
    git clone https://github.com/kayedee90/challenge-api-deployment.git
    cd challenge-api-deployment
-```
+   ```
 
 2. Build the Docker image:
     ```bash
     docker build -t immoeliza-api .
-```
+   ```
 
 3. Run the container locally:
     ```bash 
     docker run -p 8000:8000 immoeliza-api
-```
+
+   ```
 
 4. Access the API at:
     ```bash 
     http://localhost:8000/docs
     
-```
+   ```
 ### Streamlit Frontend App
 
 ### Description
@@ -79,6 +80,6 @@ To run the Streamlit frontend locally, follow these steps:
 3. Run the Streamlit app:  
    ```bash
    streamlit run streamlit_app.py
-```
+   ```
 4. Open your browser at http://localhost:8501 to use the app.
 
