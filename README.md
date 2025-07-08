@@ -32,7 +32,7 @@ The backend API is containerized using Docker. The Dockerfile uses Ubuntu 22.04 
 - Exposes port `8000`
 - Starts the API with:
    
-  ```bash
+```bash
   uvicorn app:app --host 0.0.0.0 --port 8000
 ```
 
