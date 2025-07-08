@@ -99,5 +99,12 @@ Once both the backend and frontend are running:
 ├── Dockerfile # Docker config for backend API
 ├── requirements.txt # Python dependencies
 └── README.md # Project documentation
+###Visuals
+screenshot from our app
+
+###Contributors
+Kenny 
+Yassine
+Evi Velentza
 
 
