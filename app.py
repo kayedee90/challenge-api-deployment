@@ -36,12 +36,16 @@ class DataInput(BaseModel):
         Literal["NEW", "GOOD", "TO RENOVATE", "JUST RENOVATED", "TO REBUILD"]
     ] = None
 
-    @field_validator("property_type", "building_state", mode="before")
-    @classmethod
-    def normalize_uppercase(cls, v):
-        if isinstance(v, str):
-            return v.upper()
-        return v
+# Validator that automatically applies uppercase formatting to specific fields
+@field_validator("property_type", "building_state", mode="before")  # Apply validator before field conversion
+@classmethod  # Define as a class method to access the class via 'cls'
+def normalize_uppercase(cls, v):
+    # Check if the value is a string
+    if isinstance(v, str):
+        # Convert the string to uppercase to enforce consistent formatting
+        return v.upper()
+    # If the value is not a string, return it unchanged
+    return v
 
 
 
@@ -52,7 +56,7 @@ class PropertyInput(BaseModel):
 # Create the FastAPI app
 app = FastAPI()
 
-# check if the API is running
+# Check if the API is running
 @app.get("/")
 def root():
     return "Alive"
@@ -85,29 +89,26 @@ def predict_price(input: PropertyInput):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
     
+# Define an endpoint at /predict using a GET request
 @app.get("/predict")
+# Return a structured JSON response with usage instructions
 def predict_instructions():
     return JSONResponse(content={
-        "message": "Please input your data in the following format:",
-        "format": {
-            "data": {
-                "area": "Input a number, like: 105",
-                "property_type": "Choose between: APARTMENT | HOUSE | OTHERS",
-                "rooms_number": "Input a number, like: 3",
-                "zip_code": "Input a number, like: 9300",
-                "land_area": "Input a number, like: 200",
-                "garden": "Enter: true or false",
-                "garden_area": "Input a number, like: 50",
-                "equipped_kitchen": "Enter: true or false",
-                "full_address": "Input the city name, like: 'Aalst'",
-                "swimming_pool": "Enter: true or false",
-                "furnished": "Enter: true or false",
-                "open_fire": "Enter: true or false",
-                "terrace": "Enter: true or false",
-                "terrace_area": "Input a number, like: 20",
-                "facades_number": "Input a number, like: 2",
-                "building_state": "Choose between: NEW | GOOD | TO RENOVATE | JUST RENOVATED | TO REBUILD"
-            }
-        }
+        "message": "Please input your data using these fields:",
+        "area": "Input a number, like: 105",
+        "property_type": "Choose between: APARTMENT | HOUSE | OTHERS",
+        "rooms_number": "Input a number, like: 3",
+        "zip_code": "Input a number, like: 9300",
+        "land_area": "Input a number, like: 200",
+        "garden": "Enter: true or false",
+        "garden_area": "Input a number, like: 50",
+        "equipped_kitchen": "Enter: true or false",
+        "full_address": "Input the city name, like: 'Aalst'",
+        "swimming_pool": "Enter: true or false",
+        "furnished": "Enter: true or false",
+        "open_fire": "Enter: true or false",
+        "terrace": "Enter: true or false",
+        "terrace_area": "Input a number, like: 20",
+        "facades_number": "Input a number, like: 2",
+        "building_state": "Choose between: NEW | GOOD | TO RENOVATE | JUST RENOVATED | TO REBUILD"
     })
-
