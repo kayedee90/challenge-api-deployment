@@ -18,7 +18,6 @@ This project includes:
 - **Cloud deployment** on [Render](https://render.com/) for the API.
 
 
-
 ## Installation
 
 ### Backend API (FastAPI with Docker)
@@ -31,7 +30,8 @@ The backend API is containerized using Docker. The Dockerfile uses Ubuntu 22.04 
 - Base image: `ubuntu:22.04`
 - Python 3.10 installed along with pip
 - Exposes port `8000`
-- Starts the API with:  
+- Starts the API with:
+   
   ```bash
   uvicorn app:app --host 0.0.0.0 --port 8000
 ```
