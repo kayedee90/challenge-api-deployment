@@ -104,23 +104,6 @@ evaluate_model("Train", y_train, catboost_model.predict(X_train))
 evaluate_model("Validation", y_val, catboost_model.predict(X_val))
 evaluate_model("Test", y_test, catboost_model.predict(X_test))
 
-#set defaults
-import json
-
-defaults = {
-    "postCode": str(df["postCode"].mode()[0]),
-    "buildingCondition": df["buildingCondition"].mode()[0],
-    "epcScore": df["epcScore"].mode()[0],
-    "bedroomCount": int(df["bedroomCount"].median()),
-    "toilet_and_bath": int(df["toilet_and_bath"].median()),
-    "habitableSurface": df["habitableSurface"].median(),
-    "facedeCount": int(df["facedeCount"].mode()[0]),
-    "hasTerrace": int(df["hasTerrace"].mode()[0]),
-    "totalParkingCount": int(df["totalParkingCount"].median())
-}
-
-with open("default_values.json", "w") as f:
-    json.dump(defaults, f)
 
 # ============================
 # 6. Save Model
