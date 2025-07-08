@@ -45,14 +45,17 @@ To run this project locally, make sure you have **Docker** installed.
    git clone https://github.com/kayedee90/challenge-api-deployment.git
    cd challenge-api-deployment
 ```
+
 2. Build the Docker image:
     ```bash
     docker build -t immoeliza-api .
 ```
+
 3. Run the container locally:
     ```bash 
     docker run -p 8000:8000 immoeliza-api
 ```
+
 4. Access the API at:
     ```bash 
     http://localhost:8000/docs
