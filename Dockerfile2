@@ -1,24 +1,19 @@
 FROM ubuntu:22.04
 
-# Install Python 3.10 and pip
+# Update en install Python 3.10 and pip
 RUN apt-get update && apt-get install -y python3.10 python3.10-venv python3-pip
+
 
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.10 1 \
  && update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 1
 
 WORKDIR /app
 
-# Copy and install dependencies
 COPY requirements.txt .
+
 RUN pip install --no-cache-dir --upgrade pip \
  && pip install --no-cache-dir -r requirements.txt
 
-# Copy app code
 COPY . .
-
-# Expose Streamlit default port
-EXPOSE 8501
-
-# Run Streamlit app
-CMD ["streamlit", "run", "streamlit_app.py", "--server.port=8501", "--server.address=0.0.0.0"]
-
+EXPOSE 8000
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
