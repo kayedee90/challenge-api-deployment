@@ -5,10 +5,10 @@ import json
 from catboost import CatBoostRegressor
 import numpy as np
 
-# Set Streamlit page title and icon
+# Set page title
 st.set_page_config(page_title="Property Price Predictor", layout="wide")
 
-# --- Load model and feature columns (cached) ---
+# Load model and feature columns
 @st.cache_resource
 def load_model():
     try:
@@ -34,7 +34,7 @@ def load_model_features():
             "postCode", "buildingCondition", "epcScore"
         ]
 
-# --- Load zip code data (cached) ---
+# Load zip code data
 @st.cache_data
 def load_zipcode_data():
     with open("municipalities_codes.json", encoding="utf-8") as f:
@@ -57,12 +57,9 @@ def get_zipcode_info(zipcode, data):
 
 def preprocess_input(area, property_type, rooms_number, zip_code, terrace, facades_number, building_state, bathrooms):
     """
-    Preprocess input data to match the model's expected features.
-    Model expects these exact columns in this order:
-    ["bedroomCount", "toilet_and_bath", "habitableSurface", "facedeCount", "hasTerrace", "totalParkingCount",
-     "type", "subtype", "province", "locality", "postCode", "buildingCondition", "epcScore"]
+    Preprocess input data to match the model.
     """
-    # Map Streamlit inputs to model features
+    # Model features
     features = {
         # Numeric features
         'bedroomCount': rooms_number,
@@ -70,16 +67,16 @@ def preprocess_input(area, property_type, rooms_number, zip_code, terrace, facad
         'habitableSurface': area,
         'facedeCount': facades_number,
         'hasTerrace': 1 if terrace else 0,
-        'totalParkingCount': 0,  # Default value, not collected in UI
+        'totalParkingCount': 0,  # Default value
         
-        # Categorical features (CatBoost handles these as strings)
+        # Categorical features
         'type': property_type,
-        'subtype': 'nan',  # Default value, not collected in UI
-        'province': 'nan',  # Default value, not collected in UI
-        'locality': 'nan',  # Default value, not collected in UI
-        'postCode': str(zip_code),  # Convert to string as expected by model
+        'subtype': 'nan',  # Default value
+        'province': 'nan',  # Default value
+        'locality': 'nan',  # Default value
+        'postCode': str(zip_code),  # Convert to string
         'buildingCondition': building_state,
-        'epcScore': 'nan'  # Default value, not collected in UI
+        'epcScore': 'nan'  # Default value
     }
     
     # Convert to DataFrame with exact column order as training
@@ -160,7 +157,7 @@ data = {
 }
 df = pd.DataFrame(data)
 
-# --- Required fields ---
+# Required fields
 col1, col2 = st.columns(2)
 
 with col1:
@@ -211,7 +208,7 @@ if st.button("Predict Price"):
                 # Get zip code info
                 info = get_zipcode_info(zip_code, zipcode_data)
 
-                # --- Card Layout (Horizontal) ---
+                # Card Layout
                 with st.container():
                     st.subheader("Property Summary")
                     col1, col2 = st.columns([1, 2])
@@ -245,7 +242,7 @@ colors = {
     "OTHERS": "purple"
 }
 
-# Dropdown to filter by property type (affects chart colors)
+# Dropdown to filter by property type
 property_type_filter = st.selectbox(
     "Filter by Property Type",
     options=["ALL", "APARTMENT", "HOUSE", "OTHERS"],
@@ -273,7 +270,7 @@ fig_area_price = px.line(
 )
 st.plotly_chart(fig_area_price, use_container_width=True)
 
-# Global price distribution boxplot (always uses ALL color)
+# Global price distribution boxplot
 st.subheader("Price Distribution per Property Type")
 fig1 = px.box(
     df,
