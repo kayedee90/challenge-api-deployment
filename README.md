@@ -17,6 +17,12 @@ This project includes:
 - A **Dockerized architecture**, ensuring easy setup and consistent deployment.
 - **Cloud deployment** on [Render](https://render.com/) for the API.
 
+## How it works?
+
+```bash
+User → Streamlit App → FastAPI API → CatBoost Model → Prediction
+```
+
 
 ## Installation
 
