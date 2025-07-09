@@ -118,4 +118,6 @@ Once both the backend and frontend are running:
 screenshot from our app
 
 ### Contributors
-Kenny, Yassine, Evi
+- [Kenny](https://github.com/kayedee90)
+- [Yassine](https://github.com/YassineOslm)
+- [Evi](https://github.com/evivelentza)
