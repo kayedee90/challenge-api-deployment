@@ -93,13 +93,16 @@ Once both the backend and frontend are running:
 - For developers: you can directly interact with the API at `http://localhost:8000/docs`
 
 ### Project Structure
-├── app.py # FastAPI application (entry point)
 
-├── streamlit_app.py # Streamlit frontend UI
+├── app.py # FastAPI application (entry point)
 
 ├── model/ # Trained ML model files
 
-├── Dockerfile # Docker config for backend API
+├── streamlit_app.py # Streamlit frontend UI
+
+├── Dockerfile.streamlit # Docker config for Streamlit
+
+├── Dockerfile.uvicorn # Docker config for backend API
 
 ├── requirements.txt # Python dependencies
 
