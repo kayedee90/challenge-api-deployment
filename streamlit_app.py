@@ -1,11 +1,38 @@
 import streamlit as st
-import requests
 import plotly.express as px
 import pandas as pd
 import json
+from catboost import CatBoostRegressor
+import numpy as np
 
 # Set Streamlit page title and icon
 st.set_page_config(page_title="Property Price Predictor", layout="wide")
+
+# --- Load model and feature columns (cached) ---
+@st.cache_resource
+def load_model():
+    try:
+        model = CatBoostRegressor()
+        model.load_model("model/catboost_model.cbm")
+        return model
+    except Exception as e:
+        st.error(f"Error loading model: {e}")
+        return None
+
+@st.cache_data
+def load_model_features():
+    try:
+        with open("model_features.json", "r") as f:
+            return json.load(f)
+    except Exception as e:
+        st.warning(f"Could not load model features: {e}")
+        # Return expected features based on training code
+        return [
+            "bedroomCount", "toilet_and_bath", "habitableSurface", 
+            "facedeCount", "hasTerrace", "totalParkingCount",
+            "type", "subtype", "province", "locality", 
+            "postCode", "buildingCondition", "epcScore"
+        ]
 
 # --- Load zip code data (cached) ---
 @st.cache_data
@@ -13,6 +40,9 @@ def load_zipcode_data():
     with open("municipalities_codes.json", encoding="utf-8") as f:
         return json.load(f)
 
+# Load model and data
+model = load_model()
+model_features = load_model_features()
 zipcode_data = load_zipcode_data()
 
 def get_zipcode_info(zipcode, data):
@@ -24,6 +54,44 @@ def get_zipcode_info(zipcode, data):
                 "municipality": entry["municipality_name_french"]
             }
     return None
+
+def preprocess_input(area, property_type, rooms_number, zip_code, terrace, facades_number, building_state, bathrooms):
+    """
+    Preprocess input data to match the model's expected features.
+    Model expects these exact columns in this order:
+    ["bedroomCount", "toilet_and_bath", "habitableSurface", "facedeCount", "hasTerrace", "totalParkingCount",
+     "type", "subtype", "province", "locality", "postCode", "buildingCondition", "epcScore"]
+    """
+    # Map Streamlit inputs to model features
+    features = {
+        # Numeric features
+        'bedroomCount': rooms_number,
+        'toilet_and_bath': bathrooms,
+        'habitableSurface': area,
+        'facedeCount': facades_number,
+        'hasTerrace': 1 if terrace else 0,
+        'totalParkingCount': 0,  # Default value, not collected in UI
+        
+        # Categorical features (CatBoost handles these as strings)
+        'type': property_type,
+        'subtype': 'nan',  # Default value, not collected in UI
+        'province': 'nan',  # Default value, not collected in UI
+        'locality': 'nan',  # Default value, not collected in UI
+        'postCode': str(zip_code),  # Convert to string as expected by model
+        'buildingCondition': building_state,
+        'epcScore': 'nan'  # Default value, not collected in UI
+    }
+    
+    # Convert to DataFrame with exact column order as training
+    column_order = [
+        "bedroomCount", "toilet_and_bath", "habitableSurface", 
+        "facedeCount", "hasTerrace", "totalParkingCount",
+        "type", "subtype", "province", "locality", 
+        "postCode", "buildingCondition", "epcScore"
+    ]
+    
+    df = pd.DataFrame([features])[column_order]
+    return df
 
 st.markdown("""
 <style>
@@ -82,7 +150,6 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-
 # Example dataset for visualizations
 data = {
     "area": [50, 70, 100, 150, 200, 120, 80, 60, 90, 130],
@@ -104,7 +171,7 @@ with col1:
 
 with col2:
     building_state = st.selectbox("Building Condition", [
-        "NEW", "GOOD", "TO RENOVATE", "JUST RENOVATED", "TO REBUILD"
+        "NEW", "GOOD", "TO RENOVATE", "JUST RENOVATED", "TO REBUILD", "nan"
     ])
     facades_number = st.number_input("Number of Facades", min_value=1, max_value=4, value=2)
     bathrooms = st.number_input("Toilets & Bathrooms", min_value=1, max_value=10, value=1)
@@ -126,25 +193,20 @@ st.markdown("""
 
 # --- Submit button ---
 if st.button("Predict Price"):
-    input_data = {
-        "data": {
-            "area": area,
-            "property_type": property_type,
-            "rooms_number": rooms_number,
-            "zip_code": zip_code,
-            "terrace": terrace,
-            "facades_number": facades_number,
-            "building_state": building_state
-        }
-    }
-    with st.spinner("Calculating..."):
-        try:
-            api_url = "https://challenge-api-deployment-wlr4.onrender.com/predict"
-            response = requests.post(api_url, json=input_data)
-
-            if response.status_code == 200:
-                result = response.json()
-                price = int(result['prediction'])
+    if model is None:
+        st.error("Model could not be loaded. Please check the model file path.")
+    else:
+        with st.spinner("Calculating..."):
+            try:
+                # Preprocess input data
+                input_features = preprocess_input(
+                    area, property_type, rooms_number, zip_code, 
+                    terrace, facades_number, building_state, bathrooms
+                )
+                
+                # Make prediction
+                prediction = model.predict(input_features)
+                price = int(prediction[0])
 
                 # Get zip code info
                 info = get_zipcode_info(zip_code, zipcode_data)
@@ -171,16 +233,9 @@ if st.button("Predict Price"):
                         else:
                             st.warning("❗ Location not found for this zip code.")
 
-            else:
-                try:
-                    error_detail = response.json().get('detail', 'Unknown error')
-                except:
-                    error_detail = response.text
-                st.error(f"Error: {error_detail}")
-
-        except Exception as e:
-            st.error(f"Could not reach the API: {e}")
-
+            except Exception as e:
+                st.error(f"Error making prediction: {e}")
+                st.error("Please check that the input features match your model's expected format.")
 
 # Color scheme per property type
 colors = {
@@ -253,4 +308,3 @@ fig_avg_type = px.bar(
 )
 fig_avg_type.update_traces(opacity=0.5)
 st.plotly_chart(fig_avg_type, use_container_width=True)
-
