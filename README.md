@@ -4,7 +4,7 @@
 
 ## Description
 
-The **ImmoEliza API** is a service designed to predict real estate prices based on detailed property attributes. Built for ImmoEliza’s web developers, it exposes an easy-to-use JSON API backed by a trained machine learning regression model.
+The **ImmoEliza API** is a service designed to predict real estate prices based on detailed property attributes. Built for ImmoEliza’s web developers, it exposes an easy-to-use JSON API backed by a trained machine learning regression model (CatBoost).
 
 With this API, users can send property details and receive accurate price predictions in real-time — no need for manual price estimations or offline calculations.
 
@@ -94,18 +94,23 @@ Once both the backend and frontend are running:
 
 ### Project Structure
 ├── app.py # FastAPI application (entry point)
+
 ├── streamlit_app.py # Streamlit frontend UI
+
 ├── model/ # Trained ML model files
+
 ├── Dockerfile # Docker config for backend API
+
 ├── requirements.txt # Python dependencies
+
 └── README.md # Project documentation
 
 ### Visuals
 screenshot from our app
 
 ### Contributors
-Kenny 
-Yassine
-Evi Velentza
+-Kenny 
+-Yassine
+-Evi
 
 
