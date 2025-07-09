@@ -109,8 +109,6 @@ Once both the backend and frontend are running:
 screenshot from our app
 
 ### Contributors
--Kenny 
--Yassine
--Evi
+Kenny, Yassine, Evi
 
 
