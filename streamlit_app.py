@@ -124,62 +124,62 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- Submit button ---
+from catboost import CatBoostRegressor
+from preprocessing.cleaning_data import preprocess
+from predict.prediction import predict  # if you have it
+
+# Load model once
+@st.cache_resource
+def load_model():
+    model = CatBoostRegressor()
+    model.load_model("model/catboost_model.cbm")
+    return model
+
+model = load_model()
+
 if st.button("Predict Price"):
-    input_data = {
-        "data": {
-            "area": area,
-            "property_type": property_type,
-            "rooms_number": rooms_number,
-            "zip_code": zip_code,
-            "terrace": terrace,
-            "facades_number": facades_number,
-            "building_state": building_state
-        }
+    input_dict = {
+        "area": area,
+        "property_type": property_type,
+        "rooms_number": rooms_number,
+        "zip_code": zip_code,
+        "terrace": terrace,
+        "facades_number": facades_number,
+        "building_state": building_state
     }
+
     with st.spinner("Calculating..."):
         try:
-            api_url = "https://challenge-api-deployment-wlr4.onrender.com/predict"
-            response = requests.post(api_url, json=input_data)
+            input_df = preprocess(input_dict)
+            price = predict(model, input_df)
 
-            if response.status_code == 200:
-                result = response.json()
-                price = int(result['prediction'])
+            # Same display logic as before...
+            info = get_zipcode_info(zip_code, zipcode_data)
 
-                # Get zip code info
-                info = get_zipcode_info(zip_code, zipcode_data)
+            with st.container():
+                st.subheader("Property Summary")
+                col1, col2 = st.columns([1, 2])
 
-                # --- Card Layout (Horizontal) ---
-                with st.container():
-                    st.subheader("Property Summary")
-                    col1, col2 = st.columns([1, 2])
+                with col1:
+                    st.markdown(f"**Municipality**: {info['municipality'] if info else 'Unknown'}")
+                    st.markdown(f"**Property Type**: {property_type}")
+                    st.markdown(f"**Living Area**: {area} m²")
+                    st.markdown(f"**Bedrooms**: {rooms_number}")
+                    st.markdown(f"**Bathrooms**: {bathrooms}")
+                    st.markdown(f"**Facades**: {facades_number}")
+                    st.markdown(f"**Terrace**: {'Yes' if terrace else 'No'}")
+                    st.markdown(f"**Building Condition**: {building_state}")
+                    st.subheader(f"Predicted Price: €{price:,}")
 
-                    with col1:
-                        st.markdown(f"**Municipality**: {info['municipality'] if info else 'Unknown'}")
-                        st.markdown(f"**Property Type**: {property_type}")
-                        st.markdown(f"**Living Area**: {area} m²")
-                        st.markdown(f"**Bedrooms**: {rooms_number}")
-                        st.markdown(f"**Bathrooms**: {bathrooms}")
-                        st.markdown(f"**Facades**: {facades_number}")
-                        st.markdown(f"**Terrace**: {'Yes' if terrace else 'No'}")
-                        st.markdown(f"**Building Condition**: {building_state}")
-                        st.subheader(f"Predicted Price: €{price:,}")
-
-                    with col2:
-                        if info:
-                            st.map(pd.DataFrame({'lat': [info["lat"]], 'lon': [info["lon"]]}))
-                        else:
-                            st.warning("❗ Location not found for this zip code.")
-
-            else:
-                try:
-                    error_detail = response.json().get('detail', 'Unknown error')
-                except:
-                    error_detail = response.text
-                st.error(f"Error: {error_detail}")
+                with col2:
+                    if info:
+                        st.map(pd.DataFrame({'lat': [info["lat"]], 'lon': [info["lon"]]}))
+                    else:
+                        st.warning("Location not found for this zip code.")
 
         except Exception as e:
-            st.error(f"Could not reach the API: {e}")
+            st.error(f"Prediction failed: {e}")
+
 
 
 # Color scheme per property type
